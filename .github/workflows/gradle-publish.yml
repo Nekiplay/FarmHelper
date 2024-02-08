@@ -1,7 +1,8 @@
 name: Run Gradle Build
-on: [ push ]
+on: push 
+
 jobs:
-  gradle:
+  build:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
