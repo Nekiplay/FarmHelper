@@ -31,7 +31,6 @@ public class FeatureManager {
                 AutoPestHunter.getInstance(),
                 AutoRepellent.getInstance(),
                 AutoSell.getInstance(),
-                BanInfoWS.getInstance(),
                 DesyncChecker.getInstance(),
                 Freelook.getInstance(),
                 LagDetector.getInstance(),

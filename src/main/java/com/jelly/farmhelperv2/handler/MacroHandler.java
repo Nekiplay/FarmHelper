@@ -13,10 +13,7 @@ import com.jelly.farmhelperv2.feature.impl.*;
 import com.jelly.farmhelperv2.hud.ProfitCalculatorHUD;
 import com.jelly.farmhelperv2.macro.AbstractMacro;
 import com.jelly.farmhelperv2.macro.impl.*;
-import com.jelly.farmhelperv2.util.KeyBindUtils;
-import com.jelly.farmhelperv2.util.LogUtils;
-import com.jelly.farmhelperv2.util.PlayerUtils;
-import com.jelly.farmhelperv2.util.RenderUtils;
+import com.jelly.farmhelperv2.util.*;
 import com.jelly.farmhelperv2.util.helper.AudioManager;
 import com.jelly.farmhelperv2.util.helper.Clock;
 import com.jelly.farmhelperv2.util.helper.FlyPathfinder;
@@ -311,6 +308,11 @@ public class MacroHandler {
         }
         if (mc.thePlayer == null || mc.theWorld == null) return;
         if (mc.currentScreen != null) {
+            KeyBindUtils.stopMovement();
+            return;
+        }
+
+        if (TickRate.INSTANCE.getTimeSinceLastTick() > 1.15) {
             KeyBindUtils.stopMovement();
             return;
         }

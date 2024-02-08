@@ -96,11 +96,6 @@ public class TeleportFailsafe extends Failsafe {
             return;
         }
 
-        if (TickRate.INSTANCE.getTimeSinceLastTick() > 1.15) {
-            LogUtils.sendWarning("[Failsafe] Got rotation packet while lagging! Ignoring that one.");
-            return;
-        }
-
 //        if (LagDetector.getInstance().isLagging() || LagDetector.getInstance().wasJustLagging()) {
 //            LogUtils.sendWarning("[Failsafe] Got rotation packet while lagging! Ignoring that one.");
 //            return;
