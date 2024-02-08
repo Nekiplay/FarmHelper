@@ -9,12 +9,9 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/gradle-build-action@v2
-        name: Setup Gradle
       - name: Build
         run: ./gradlew build
-
-      - name: release
+      - name: Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
             repo_token: '${{ secrets.GITHUB_TOKEN }}'
