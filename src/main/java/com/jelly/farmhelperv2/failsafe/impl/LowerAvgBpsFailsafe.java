@@ -79,52 +79,7 @@ public class LowerAvgBpsFailsafe extends Failsafe {
 
     @Override
     public void duringFailsafeTrigger() {
-        switch (lowerBPSState) {
-            case NONE:
-                FailsafeManager.getInstance().scheduleRandomDelay(500, 1000);
-                lowerBPSState = LowerBPSState.WAIT_BEFORE_START;
-                break;
-            case WAIT_BEFORE_START:
-                KeyBindUtils.stopMovement();
-                MacroHandler.getInstance().pauseMacro();
-                FailsafeManager.getInstance().scheduleRandomDelay(500, 500);
-                lowerBPSState = LowerBPSState.WARP_BACK;
-                break;
-            case WARP_BACK:
-                if (GameStateHandler.getInstance().inGarden()) {
-                    MacroHandler.getInstance().triggerWarpGarden(true, true);
-                    FailsafeManager.getInstance().scheduleRandomDelay(500, 1000);
-                    lowerBPSState = LowerBPSState.END;
-                } else {
-                    if (GameStateHandler.getInstance().getLocation() == GameStateHandler.Location.HUB) {
-                        MacroHandler.getInstance().triggerWarpGarden(true, false);
-                        FailsafeManager.getInstance().scheduleRandomDelay(2500, 2000);
-                    } else if (GameStateHandler.getInstance().getLocation() == GameStateHandler.Location.LIMBO) {
-                        mc.thePlayer.sendChatMessage("/l");
-                        FailsafeManager.getInstance().scheduleRandomDelay(2500, 2000);
-                    } else {
-                        mc.thePlayer.sendChatMessage("/skyblock");
-                        FailsafeManager.getInstance().scheduleRandomDelay(5500, 4000);
-                    }
-                }
-                break;
-            case END:
-                float randomTime = FarmHelperConfig.getRandomRotationTime();
-                this.rotation.easeTo(
-                        new RotationConfiguration(
-                                new Rotation(
-                                        (float) (mc.thePlayer.rotationYaw + Math.random() * 60 - 30),
-                                        (float) (30 + Math.random() * 20 - 10))
-                                , (long) randomTime, null));
-                FailsafeManager.getInstance().stopFailsafes();
-                if (FarmHelperConfig.enableRestartAfterFailSafe) {
-                    MacroHandler.getInstance().pauseMacro();
-                } else {
-                    MacroHandler.getInstance().disableMacro();
-                }
-                FailsafeManager.getInstance().restartMacroAfterDelay();
-                break;
-        }
+
     }
 
     @Override

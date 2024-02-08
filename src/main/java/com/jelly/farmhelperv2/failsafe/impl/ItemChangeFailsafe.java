@@ -87,31 +87,7 @@ public class ItemChangeFailsafe extends Failsafe {
 
     @Override
     public void duringFailsafeTrigger() {
-        switch (itemChangeState) {
-            case NONE:
-                FailsafeManager.getInstance().scheduleRandomDelay(500, 1000);
-                itemChangeState = ItemChangeState.WAIT_BEFORE_START;
-                break;
-            case WAIT_BEFORE_START:
-                MacroHandler.getInstance().pauseMacro();
-                KeyBindUtils.stopMovement();
-                itemChangeState = ItemChangeState.LOOK_AROUND;
-                FailsafeManager.getInstance().scheduleRandomDelay(500, 500);
-                break;
-            case LOOK_AROUND:
-                MovRecPlayer.getInstance().playRandomRecording("ITEM_CHANGE_");
-                itemChangeState = ItemChangeState.SWAP_BACK_ITEM;
-                break;
-            case SWAP_BACK_ITEM:
-                if (MovRecPlayer.getInstance().isRunning()) return;
-                itemChangeState = ItemChangeState.END;
-                FailsafeManager.getInstance().scheduleRandomDelay(500, 1000);
-                break;
-            case END:
-                PlayerUtils.getTool();
-                endOfFailsafeTrigger();
-                break;
-        }
+
     }
 
     @Override
