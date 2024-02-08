@@ -3,6 +3,7 @@ on: [ push ]
 jobs:
   gradle:
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - uses: actions/setup-java@v3
         name: Setup Java
