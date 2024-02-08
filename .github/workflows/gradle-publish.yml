@@ -1,5 +1,5 @@
 name: Run Gradle Build
-on: push
+on: push 
 
 jobs:
   build:
@@ -19,9 +19,9 @@ jobs:
       - name: Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: '${{ secrets.GITHUB_TOKEN }}'
-          automatic_release_tag: "1.8.9"
-          prerelease: true
-          title: "1.8.9"
-          files: |
-            ./build/libs/*.jar
+            repo_token: '${{ secrets.GITHUB_TOKEN }}'
+            automatic_release_tag: "1.8.9"
+            prerelease: true
+            title: "1.8.9"
+            files: |
+              ./build/libs/*.jar
