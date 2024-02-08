@@ -1,0 +1,25 @@
+name: Run Gradle Build
+on: [ push ]
+jobs:
+  gradle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v3
+        name: Setup Java
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/gradle-build-action@v2
+        name: Setup Gradle
+      - name: Build
+        run: ./gradlew build
+
+      - name: release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+            repo_token: '${{ secrets.GITHUB_TOKEN }}'
+            automatic_release_tag: "1.8.9"
+            prerelease: true
+            title: "1.8.9"
+            files: |
+              ./build/libs/*.jar
