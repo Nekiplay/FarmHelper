@@ -208,29 +208,7 @@ public class BanInfoWS implements IFeature {
 
     @SubscribeEvent
     public void onTickReconnect(TickEvent.ClientTickEvent event) {
-        if (!reconnectDelay.isScheduled() || !reconnectDelay.passed()) return;
-
-        if (client.isClosed() && !client.isOpen()) {
-            try {
-                reconnectDelay.reset();
-                receivedBanwaveInfo = false;
-                LogUtils.sendDebug("Connecting to analytics server...");
-                Multithreading.schedule(() -> {
-                    lastReceivedPacket = System.currentTimeMillis();
-                    JsonObject headers = getHeaders();
-                    if (headers == null) {
-                        LogUtils.sendDebug("Failed to connect to analytics server. Retrying in 1 minute...");
-                        return;
-                    }
-                    for (Map.Entry<String, JsonElement> header : headers.entrySet()) {
-                        client.addHeader(header.getKey(), header.getValue().getAsString());
-                    }
-                    client.reconnect();
-                }, 0, TimeUnit.MILLISECONDS);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        
     }
 
     @SubscribeEvent
