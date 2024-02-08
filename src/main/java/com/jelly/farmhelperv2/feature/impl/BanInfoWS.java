@@ -80,25 +80,7 @@ public class BanInfoWS implements IFeature {
     private boolean receivedBanwaveInfo = false;
 
     public BanInfoWS() {
-        try {
-            LogUtils.sendDebug("Connecting to analytics server...");
-            client = createNewWebSocketClient();
-            Multithreading.schedule(() -> {
-                JsonObject headers = getHeaders();
-                if (headers == null) {
-                    LogUtils.sendDebug("Failed to connect to analytics server. Retrying in 1 minute...");
-                    return;
-                }
-                for (Map.Entry<String, JsonElement> header : headers.entrySet()) {
-                    client.addHeader(header.getKey(), header.getValue().getAsString());
-                }
-                client.connect();
-            }, 0, TimeUnit.MILLISECONDS);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            if (client != null)
-                client.close();
-        }
+
     }
 
     public static BanInfoWS getInstance() {
@@ -263,203 +245,15 @@ public class BanInfoWS implements IFeature {
     // SKYSKIPPED BAN STATS
 
     private void processBanScreen(String wholeReason) {
-        FailsafeManager.getInstance().stopFailsafes();
-        ArrayList<String> multilineMessage = new ArrayList<>(Arrays.asList(wholeReason.split("\n")));
-        try {
-            if (times.stream().noneMatch(time -> multilineMessage.get(0).contains(time)) || days.stream().noneMatch(day -> multilineMessage.get(0).contains(day)))
-                return;
 
-            String duration = StringUtils.stripControlCodes(multilineMessage.get(0)).replace("You are temporarily banned for ", "")
-                    .replace(" from this server!", "").trim();
-            String reason = StringUtils.stripControlCodes(multilineMessage.get(2)).replace("Reason: ", "").trim();
-            int durationDays = Integer.parseInt(duration.split(" ")[0].replace("d", ""));
-            String banId = StringUtils.stripControlCodes(multilineMessage.get(5)).replace("Ban ID: ", "").trim();
-            BanInfoWS.getInstance().playerBanned(durationDays, reason, banId, wholeReason);
-            LogUtils.webhookLog("[Banned]\\nBanned for " + durationDays + " days for " + reason, true);
-            if (MacroHandler.getInstance().isMacroToggled()) {
-                MacroHandler.getInstance().disableMacro();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public void playerBanned(int days, String reason, String banId, String fullReason) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("message", "gotBanned");
-        jsonObject.addProperty("uuid", Minecraft.getMinecraft().getSession().getPlayerID());
-        jsonObject.addProperty("mod", "farmHelper");
-        jsonObject.addProperty("username", Minecraft.getMinecraft().getSession().getUsername());
-        jsonObject.addProperty("days", days + 1);
-        jsonObject.addProperty("banId", banId);
-        jsonObject.addProperty("reason", reason);
-        jsonObject.addProperty("fullReason", fullReason);
-        String config = FarmHelper.config.getJson();
-        JsonObject configJson = FarmHelper.gson.fromJson(config, JsonObject.class);
-        configJson.addProperty("proxyAddress", "REMOVED");
-        configJson.addProperty("proxyUsername", "REM0VED");
-        configJson.addProperty("proxyPassword", "REMOVED");
-        configJson.addProperty("webHookURL", "REMOVED");
-        configJson.addProperty("discordRemoteControlToken", "REMVOED");
-        String configJsonString = FarmHelper.gson.toJson(configJson);
-        jsonObject.addProperty("config", configJsonString);
-        jsonObject.addProperty("lastIsland", GameStateHandler.getInstance().getLastLocation().getName());
-        JsonObject mods = new JsonObject();
-        collectMods(mods);
-        jsonObject.add("mods", mods);
 
-        try {
-            String serverId = mojangAuthentication();
-            jsonObject.addProperty("serverId", serverId);
-        } catch (AuthenticationException e) {
-            Multithreading.schedule(() -> playerBanned(days, reason, banId, fullReason), 250, TimeUnit.MILLISECONDS);
-            return;
-        }
-
-        try {
-            client.send(jsonObject.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void collectMods(JsonObject obj) {
-        boolean ctLoaded = false;
-        boolean ssLoaded = false;
-        boolean gtcLoaded = false;
-        boolean auroraLoaded = false;
-        JsonObject mods = new JsonObject();
-        for (ModContainer mod : Loader.instance().getModList()) {
-            mods.addProperty(mod.getName(), mod.getModId());
-            switch (mod.getModId()) {
-                case "chattriggers": {
-                    ctLoaded = true;
-                    break;
-                }
-                case "skyskipped": {
-                    ssLoaded = true;
-                    break;
-                }
-                case "gumtuneclient": {
-                    gtcLoaded = true;
-                    break;
-                }
-                case "bossbar_customizer": {
-                    auroraLoaded = true;
-                    break;
-                }
-            }
-        }
-        obj.add("mods", mods);
 
-        boolean oringoLoaded = false;
-        boolean sslLoaded = false;
-        boolean gbLoaded = false;
-        boolean pizzaLoaded = false;
-        boolean cheetoLoaded = false;
-        JsonArray modFiles = new JsonArray();
-        for (File mod : Objects.requireNonNull(new File(Minecraft.getMinecraft().mcDataDir, "mods").listFiles())) {
-            if (!mod.isFile()) continue;
-            String name = mod.getName();
-            modFiles.add(new JsonPrimitive(name));
-
-            if (name.contains("OringoClient")) {
-                oringoLoaded = true;
-            }
-            if (name.contains("SkySkippedLoader")) {
-                sslLoaded = true;
-            }
-            if (name.contains("GhosterBuster")) {
-                gbLoaded = true;
-            }
-            if (name.contains("Pizza_Loader")) {
-                pizzaLoaded = true;
-            }
-            if (name.contains("Cheeto")) {
-                cheetoLoaded = true;
-            }
-        }
-        obj.add("modFiles", modFiles);
-
-        JsonArray ctModules = new JsonArray();
-        if (ctLoaded) {
-            for (File module : Objects.requireNonNull(new File(Minecraft.getMinecraft().mcDataDir, "config/ChatTriggers/modules").listFiles())) {
-                if (!module.isFile()) continue;
-                String name = module.getName();
-                ctModules.add(new JsonPrimitive(name));
-            }
-        }
-        obj.add("ctModules", ctModules);
-
-        JsonObject configFiles = new JsonObject();
-        try {
-
-            File oneConfigFolder = new File(Minecraft.getMinecraft().mcDataDir, "OneConfig/profiles/Default Profile");
-            if (!oneConfigFolder.exists()) {
-                oneConfigFolder = new File(Minecraft.getMinecraft().mcDataDir, "OneConfig/config");
-            }
-
-            File oringoFile = new File(Minecraft.getMinecraft().mcDataDir, "config/OringoClient/OringoClient.json");
-            if (oringoLoaded && oringoFile.exists()) {
-                configFiles.addProperty("oringo", compress(oringoFile));
-            }
-
-            // Add the SkySkipped config file to the JsonObject if it exists
-            File skyskippedFile = new File(Minecraft.getMinecraft().mcDataDir, "config/skyskipped/config.json");
-            if (ssLoaded && skyskippedFile.exists()) {
-                configFiles.addProperty("skyskipped", compress(skyskippedFile));
-            }
-
-            File skyskippedLoaderFile = new File(Minecraft.getMinecraft().mcDataDir, "config/skyskippedloader/config.json");
-            if (sslLoaded && skyskippedLoaderFile.exists()) {
-                configFiles.addProperty("skyskipped loader", compress(skyskippedLoaderFile));
-            }
-
-            File farmhelperFile = new File(oneConfigFolder, "farmhelper/config.json");
-            if (farmhelperFile.exists()) {
-                configFiles.addProperty("farmhelper", compress(farmhelperFile));
-            }
-
-            File ghostbusterFile = new File(oneConfigFolder, "ghosterbuster9000/config.json");
-            if (gbLoaded && ghostbusterFile.exists()) {
-                configFiles.addProperty("ghostbuster", compress(ghostbusterFile));
-            }
-
-            File pizzaFile = new File(Minecraft.getMinecraft().mcDataDir, "config/pizzaclient/config.json");
-            if (pizzaLoaded && pizzaFile.exists()) {
-                configFiles.addProperty("pizza", compress(pizzaFile));
-            }
-
-            File gumtuneClientFile = new File(oneConfigFolder, "gumtuneclient.json");
-            if (gtcLoaded && gumtuneClientFile.exists()) {
-                configFiles.addProperty("gumtuneclient", compress(gumtuneClientFile));
-            }
-
-            File auroraFile = new File(Minecraft.getMinecraft().mcDataDir, "config/aurora.toml");
-            if (auroraLoaded && auroraFile.exists()) {
-                configFiles.addProperty("aurora", compress(auroraFile));
-            }
-
-            File cheetoFile = new File(Minecraft.getMinecraft().mcDataDir, "Cheeto/configs/Client.json");
-            if (cheetoLoaded && cheetoFile.exists()) {
-                configFiles.addProperty("cheeto", compress(cheetoFile));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            obj.addProperty("configError", e.getMessage());
-        }
-
-        obj.add("configFiles", configFiles);
-
-        JsonObject extraData = new JsonObject();
-        JsonObject farmHelper = new JsonObject();
-        farmHelper.addProperty("macroEnabled", MacroHandler.getInstance().isMacroToggled());
-        farmHelper.addProperty("pestsDestroyerEnabled", FarmHelperConfig.enablePestsDestroyer);
-        farmHelper.addProperty("crop", MacroHandler.getInstance().getCrop().name());
-        farmHelper.addProperty("macroType", FarmHelperConfig.getMacro().name());
-        farmHelper.addProperty("fastBreak", FarmHelperConfig.fastBreak);
-        extraData.add("farmHelper", farmHelper);
-        obj.add("extraData", extraData);
     }
 
     public void sendAnalyticsData() {
@@ -467,53 +261,11 @@ public class BanInfoWS implements IFeature {
     }
 
     public void sendAnalyticsData(AnalyticsState state) {
-        MacroHandler.getInstance().getCurrentMacro().ifPresent(cm -> cm.getAnalyticsClock().schedule(300_000)); // 5 minutes
-        System.out.println("Sending analytics data...");
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("message", "analyticsData");
-        jsonObject.addProperty("mod", "farmHelper");
-        jsonObject.addProperty("username", Minecraft.getMinecraft().getSession().getUsername());
-        String INFO_FOR_SKIDDERS = "that's public uuid bozos, not a token to login";
-        String INFO_FOR_SKIDDERS2 = "that's public uuid bozos, not a token to login";
-        String INFO_FOR_SKIDDERS3 = "that's public uuid bozos, not a token to login";
-        jsonObject.addProperty("id", Minecraft.getMinecraft().getSession().getPlayerID());
-        jsonObject.addProperty("modVersion", FarmHelper.VERSION);
-        jsonObject.addProperty("timeMacroing", MacroHandler.getInstance().getAnalyticsTimer().getElapsedTime());
-        jsonObject.addProperty("type", state.name());
-        JsonObject additionalInfo = new JsonObject();
-        additionalInfo.addProperty("cropType", MacroHandler.getInstance().getCrop().toString());
-        additionalInfo.addProperty("bps", ProfitCalculator.getInstance().getBPS());
-        additionalInfo.addProperty("profit", ProfitCalculator.getInstance().getRealProfitString());
-        additionalInfo.addProperty("profitPerHour", ProfitCalculator.getInstance().getProfitPerHourString());
-        additionalInfo.addProperty("macroingTime", MacroHandler.getInstance().getMacroingTimer().getElapsedTime());
-        additionalInfo.addProperty("fastBreak", FarmHelperConfig.fastBreak);
-        additionalInfo.addProperty("farmType", FarmHelperConfig.getMacro().name());
-        jsonObject.add("additionalInfo", additionalInfo);
-        try {
-            client.send(jsonObject.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
     }
 
     public void sendFailsafeInfo(FailsafeManager.EmergencyType type) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("message", "staffCheck");
-        jsonObject.addProperty("mod", "farmHelper");
-        jsonObject.addProperty("username", Minecraft.getMinecraft().getSession().getUsername());
-        jsonObject.addProperty("id", Minecraft.getMinecraft().getSession().getPlayerID());
-        jsonObject.addProperty("modVersion", FarmHelper.VERSION);
-        jsonObject.addProperty("checkType", type.name());
-        JsonObject additionalInfo = new JsonObject();
-        additionalInfo.addProperty("cropType", MacroHandler.getInstance().getCrop().toString());
-        additionalInfo.addProperty("fastBreak", FarmHelperConfig.fastBreak);
-        additionalInfo.addProperty("farmType", FarmHelperConfig.getMacro().name());
-        jsonObject.add("additionalInfo", additionalInfo);
-        try {
-            client.send(jsonObject.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
     }
 
     private JsonObject getHeaders() {
