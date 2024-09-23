@@ -115,7 +115,7 @@ public class DirtFailsafe extends Failsafe {
                     dirtOnLeft = false;
                 LogUtils.sendDebug("[Failsafe] Dirt on left: " + dirtOnLeft);
                 LogUtils.sendDebug("[Failsafe] Yaw difference: " + AngleUtils.getClosest());
-                MovRecPlayer.setYawDifference(AngleUtils.getClosest());
+                //MovRecPlayer.setYawDifference(AngleUtils.getClosest());
                 FailsafeManager.getInstance().swapItemDuringRecording = Math.random() < 0.2;
                 positionBeforeReacting = mc.thePlayer.getPosition();
                 rotationBeforeReacting = new Rotation(mc.thePlayer.prevRotationYaw, mc.thePlayer.prevRotationPitch);
@@ -125,9 +125,9 @@ public class DirtFailsafe extends Failsafe {
             case PLAY_RECORDING:
                 if (blocksRemoved()) break;
                 if (dirtOnLeft)
-                    MovRecPlayer.getInstance().playRandomRecording("DIRT_CHECK_Left_Start_");
+                    //MovRecPlayer.getInstance().playRandomRecording("DIRT_CHECK_Left_Start_");
                 else
-                    MovRecPlayer.getInstance().playRandomRecording("DIRT_CHECK_Right_Start_");
+                    //MovRecPlayer.getInstance().playRandomRecording("DIRT_CHECK_Right_Start_");
                 dirtCheckState = DirtCheckState.WAIT_BEFORE_SENDING_MESSAGE;
                 break;
             case WAIT_BEFORE_SENDING_MESSAGE:
@@ -156,7 +156,7 @@ public class DirtFailsafe extends Failsafe {
                 if (MovRecPlayer.getInstance().isRunning())
                     break;
                 LogUtils.sendDebug("[Failsafe] Chosen message: " + randomMessage);
-                mc.thePlayer.sendChatMessage("/ac " + randomMessage);
+                //mc.thePlayer.sendChatMessage("/ac " + randomMessage);
                 dirtCheckState = DirtCheckState.KEEP_PLAYING;
                 FailsafeManager.getInstance().scheduleRandomDelay(500, 1000);
                 break;
@@ -205,7 +205,7 @@ public class DirtFailsafe extends Failsafe {
                     dirtCheckState = DirtCheckState.ROTATE_TO_POS_BEFORE;
                     break;
                 }
-                BaritoneHandler.walkToBlockPos(positionBeforeReacting);
+                //BaritoneHandler.walkToBlockPos(positionBeforeReacting);
                 dirtCheckState = DirtCheckState.GO_BACK_END;
                 break;
             case GO_BACK_END:
@@ -219,7 +219,7 @@ public class DirtFailsafe extends Failsafe {
                 break;
             case ROTATE_TO_POS_BEFORE:
                 if (FailsafeManager.getInstance().rotation.isRotating()) break;
-                FailsafeManager.getInstance().rotation.easeTo(new RotationConfiguration(new Rotation((float) (rotationBeforeReacting.getYaw() + (Math.random() * 30 - 15)), (float) (Math.random() * 30 + 30)),
+                ..FailsafeManager.getInstance().rotation.easeTo(new RotationConfiguration(new Rotation((float) (rotationBeforeReacting.getYaw() + (Math.random() * 30 - 15)), (float) (Math.random() * 30 + 30)),
                         500, null));
                 dirtCheckState = DirtCheckState.END_DIRT_CHECK;
                 FailsafeManager.getInstance().scheduleRandomDelay(500, 1000);
