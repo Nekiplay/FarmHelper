@@ -66,7 +66,7 @@ public class FarmHelper {
 
         mc.gameSettings.pauseOnLostFocus = false;
         mc.gameSettings.gammaSetting = 1000;
-        BanInfoWS.getInstance().loadStatsOnInit();
+        //BanInfoWS.getInstance().loadStatsOnInit();
         isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains("-agentlib:jdwp");
         if (!FarmHelperConfig.streamerMode && FarmHelperConfig.changeWindowTitle)
             Display.setTitle("Farm Helper 〔v" + VERSION + "〕 " + (!isDebug ? "Bing Chilling" : "wazzup dev?") + " ☛ " + Minecraft.getMinecraft().getSession().getUsername());
