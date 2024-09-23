@@ -90,7 +90,7 @@ public class BanInfoWS implements IFeature {
                 for (Map.Entry<String, JsonElement> header : headers.entrySet()) {
                     client.addHeader(header.getKey(), header.getValue().getAsString());
                 }
-                client.connect();
+                //client.connect();
             }, 0, TimeUnit.MILLISECONDS);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -238,7 +238,7 @@ public class BanInfoWS implements IFeature {
         Packet<?> packet = event.packet;
         if (packet instanceof S40PacketDisconnect) {
             String reason = ((S40PacketDisconnect) packet).getReason().getFormattedText();
-            processBanScreen(reason);
+            //processBanScreen(reason);
         }
     }
 
