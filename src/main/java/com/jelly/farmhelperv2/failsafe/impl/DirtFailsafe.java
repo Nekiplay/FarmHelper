@@ -125,9 +125,9 @@ public class DirtFailsafe extends Failsafe {
             case PLAY_RECORDING:
                 if (blocksRemoved()) break;
                 if (dirtOnLeft)
-                    //MovRecPlayer.getInstance().playRandomRecording("DIRT_CHECK_Left_Start_");
+                    MovRecPlayer.getInstance().playRandomRecording("DIRT_CHECK_Left_Start_");
                 else
-                    //MovRecPlayer.getInstance().playRandomRecording("DIRT_CHECK_Right_Start_");
+                    MovRecPlayer.getInstance().playRandomRecording("DIRT_CHECK_Right_Start_");
                 dirtCheckState = DirtCheckState.WAIT_BEFORE_SENDING_MESSAGE;
                 break;
             case WAIT_BEFORE_SENDING_MESSAGE:
