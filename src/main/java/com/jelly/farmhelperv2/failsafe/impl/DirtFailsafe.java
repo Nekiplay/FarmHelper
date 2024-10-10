@@ -219,7 +219,7 @@ public class DirtFailsafe extends Failsafe {
                 break;
             case ROTATE_TO_POS_BEFORE:
                 if (FailsafeManager.getInstance().rotation.isRotating()) break;
-                ..FailsafeManager.getInstance().rotation.easeTo(new RotationConfiguration(new Rotation((float) (rotationBeforeReacting.getYaw() + (Math.random() * 30 - 15)), (float) (Math.random() * 30 + 30)),
+                //FailsafeManager.getInstance().rotation.easeTo(new RotationConfiguration(new Rotation((float) (rotationBeforeReacting.getYaw() + (Math.random() * 30 - 15)), (float) (Math.random() * 30 + 30)),
                         500, null));
                 dirtCheckState = DirtCheckState.END_DIRT_CHECK;
                 FailsafeManager.getInstance().scheduleRandomDelay(500, 1000);
